@@ -1,0 +1,31 @@
+# Load the shiny package. 
+library(shiny)
+
+# Load ggplot2 package. 
+library(ggplot2)
+
+# Load the `chicago_long` dataset.
+load("chicago_long.Rdata")
+
+server <- function(input, output) {
+  
+  observeEvent(input$submit,  #<- observe monitors the submit button's value
+               
+               output$densityplot<- 
+                 renderPlot({   #<- function to create plot object to send to UI
+                   isolate({                           #<- function to isolate this part of app from regenerating
+                     # Keep only the regions selected by the user.
+                     chicago_long = subset(chicago_long,
+                                           variable %in% input$selected_variable)
+                     
+                     # Create density plot. 
+                     ggplot(chicago_long,               #<- take the dataset
+                            aes(x = norm_value,         #<- set x value
+                                fill = variable)) +     #<- fill with variable
+                       geom_density(alpha = 0.3) + #<- adjust fill transparency
+                       facet_wrap (~ variable,     #<- make facets by 'variable'
+                                   ncol = 3)       #<- set a 3-column grid
+                   }) # end of isolate
+                 }) # end of renderPlot
+  ) # end of observeEvent
+}# end of server
